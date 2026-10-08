@@ -1,0 +1,75 @@
+# Python Core & Environments
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+*.venv
+
+# Python Caches
+# Caches and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+htmlcov/
+.tox/
+.nox/
+.cache/
+
+# Build & Packaging
+# Packaging and distributions
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+develop-eggs/
+sdist/
+var/
+wheels/
+share/python-wheels/
+
+# Lockfiles & Metadata
+# Lockfiles (optional variations based on setup)
+# poetry.lock
+# uv.lock
+pip-wheel-metadata/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.prod
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.zip
+pip-log.txt
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Common Files
+*.md
+!README.md
