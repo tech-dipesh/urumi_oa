@@ -1,0 +1,4 @@
+global:
+  scheme: http
+  storeHost: store.localhost
+  storageClass: ""

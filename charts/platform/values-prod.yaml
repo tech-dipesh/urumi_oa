@@ -1,0 +1,26 @@
+# placeholder domain, set your own
+global:
+  scheme: https
+  storeHost: store.example.com
+  storageClass: ""
+store:
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tls:
+      enabled: true
+      secretName: store-tls
+  mysql:
+    storage: 20Gi
+    resources:
+      requests:
+        memory: 768Mi
+      limits:
+        memory: 1536Mi
+  wordpress:
+    storage: 20Gi
+    resources:
+      requests:
+        memory: 512Mi
+      limits:
+        memory: 1Gi
