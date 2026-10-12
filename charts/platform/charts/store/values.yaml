@@ -1,0 +1,42 @@
+namespace: store
+secretName: store-secrets
+mysql:
+  image: mysql:8.4
+  storage: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+wordpress:
+  image: wordpress:apache
+  storage: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+setup:
+  image: wordpress:cli
+  siteTitle: Urumi Store
+  adminUser: admin
+  adminEmail: admin@store.localhost
+  currency: INR
+  country: IN
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+ingress:
+  className: ""
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: store-tls
