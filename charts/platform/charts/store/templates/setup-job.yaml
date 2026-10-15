@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wp-setup
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: wp-setup
+    {{- include "store.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 900
+  template:
+    metadata:
+      labels:
+        app: wp-setup
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 33
+        runAsGroup: 33
+        fsGroup: 33
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: wordpress
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: setup
+          image: {{ .Values.setup.image }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -eu
+              until [ -f /var/www/html/wp-config.php ]; do sleep 3; done
+              until nc -z mysql 3306; do sleep 3; done
+              wp core is-installed || wp core install --url="$SITE_URL" --title="$SITE_TITLE" --admin_user="$ADMIN_USER" --admin_password="$ADMIN_PASSWORD" --admin_email="$ADMIN_EMAIL" --skip-email
+              wp plugin is-installed woocommerce || wp plugin install woocommerce
+              wp plugin activate woocommerce
+              wp wc tool run install_pages --user="$ADMIN_USER"
+              wp option update woocommerce_currency "$CURRENCY"
+              wp option update woocommerce_default_country "$COUNTRY"
+              wp option update woocommerce_coming_soon no
+              wp option update woocommerce_cod_settings '{"enabled":"yes","title":"Cash on delivery","enable_for_virtual":"yes"}' --format=json
+              wp rewrite structure '/%postname%/' --hard
+              [ "$(wp wc shipping_zone_method list 0 --user="$ADMIN_USER" --format=count)" != "0" ] || wp wc shipping_zone_method create 0 --method_id=free_shipping --user="$ADMIN_USER"
+              [ "$(wp wc product list --user="$ADMIN_USER" --format=count)" != "0" ] || wp wc product create --name="Sample mug" --type=simple --regular_price=199 --user="$ADMIN_USER"
+              echo "store setup done"
+          env:
+            {{- include "store.wpEnv" . | nindent 12 }}
+            - name: HOME
+              value: /tmp
+            - name: SITE_URL
+              value: {{ .Values.global.scheme }}://{{ .Values.global.storeHost }}
+            - name: SITE_TITLE
+              value: {{ .Values.setup.siteTitle | quote }}
+            - name: ADMIN_USER
+              value: {{ .Values.setup.adminUser | quote }}
+            - name: ADMIN_EMAIL
+              value: {{ .Values.setup.adminEmail | quote }}
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: wp-admin-password
+            - name: CURRENCY
+              value: {{ .Values.setup.currency | quote }}
+            - name: COUNTRY
+              value: {{ .Values.setup.country | quote }}
+          resources:
+            {{- toYaml .Values.setup.resources | nindent 12 }}
+          volumeMounts:
+            - name: html
+              mountPath: /var/www/html
+      volumes:
+        - name: html
+          persistentVolumeClaim:
+            claimName: wordpress-data

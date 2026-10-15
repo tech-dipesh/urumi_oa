@@ -21,3 +21,17 @@ pnpm release
 with open: `http://store.localhost for adding the sample mug of the cart`
 Also for the admin: `http://store.localhost/wp-admin` for the user admin: `pn secrets`
 
+## local domain
+
+`*.localhost` resolves to 127.0.0.1 in browsers, no hosts file edits. k3d maps host port 80 to the cluster, if port 80 is busy change it in scripts/up.sh and use that port in the url.
+
+## prod
+
+`pnpm release prod` renders with values-prod.yaml: https, a real host, tls via cert-manager, bigger volumes and limits. same templates, only values change.
+
+## stages
+1. cluster and store (this)
+2. woocommerce mcp server
+3. gateway core
+4. team and access
+5. dashboard, chat agent, prod notes

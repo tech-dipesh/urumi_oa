@@ -73,3 +73,5 @@ Thumbs.db
 # Common Files
 *.md
 !README.md
+node_modules/
+*.gitkeep
