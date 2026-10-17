@@ -11,6 +11,12 @@
 - secrets made outside helm (scripts/secrets.sh), so they never land in release history
 - wp-cli job over manual setup: a fresh install works with zero clicks
 
+## Already Build:
+A small Kubernetes cluster inside Docker (k3d), with Traefik as the front door.
+A database (MySQL) with its own storage that survives restarts.
+WordPress with its own storage.
+A one-time setup job that installs WooCommerce, turns on cash on delivery, adds a free shipping method and creates the sample product.
+Helm that installs all of this from one chart, with secrets created separately.
 
 ## setup
 ``` bash

@@ -1,4 +1,6 @@
+# publicPort must match HTTP_PORT in scripts/up.sh
 global:
   scheme: http
   storeHost: store.localhost
+  publicPort: 8080
   storageClass: ""

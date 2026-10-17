@@ -4,6 +4,7 @@
   "scripts": {
     "cluster": "bash scripts/up.sh",
     "secrets": "bash scripts/secrets.sh",
+    "reset": "bash scripts/reset.sh",
     "release": "bash scripts/deploy.sh",
     "destroy": "bash scripts/down.sh"
   }

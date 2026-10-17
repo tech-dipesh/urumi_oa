@@ -17,7 +17,7 @@ spec:
       labels:
         app: wp-setup
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       securityContext:
         runAsUser: 33
         runAsGroup: 33
@@ -55,7 +55,7 @@ spec:
             - name: HOME
               value: /tmp
             - name: SITE_URL
-              value: {{ .Values.global.scheme }}://{{ .Values.global.storeHost }}
+              value: {{ include "store.siteUrl" . | quote }}
             - name: SITE_TITLE
               value: {{ .Values.setup.siteTitle | quote }}
             - name: ADMIN_USER
