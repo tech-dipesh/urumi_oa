@@ -24,3 +24,7 @@ store:
         memory: 512Mi
       limits:
         memory: 1Gi
+woo-mcp:
+  image: ghcr.io/your-user/woo-mcp:0.1.0
+  imagePullPolicy: Always
+  replicas: 2
