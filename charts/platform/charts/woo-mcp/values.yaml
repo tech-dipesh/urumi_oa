@@ -1,0 +1,17 @@
+namespace: store
+image: woo-mcp:0.1.0
+imagePullPolicy: IfNotPresent
+replicas: 1
+port: 3000
+wooUrl: http://wordpress
+secretName: woo-mcp-secrets
+allowedHosts: localhost,127.0.0.1,woo-mcp,woo-mcp.store,woo-mcp.store.svc,woo-mcp.store.svc.cluster.local
+gatewayNamespace: platform
+gatewayApp: gateway
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 192Mi
