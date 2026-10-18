@@ -11,7 +11,7 @@ metadata:
     helm.sh/hook-delete-policy: before-hook-creation
 spec:
   backoffLimit: 3
-  activeDeadlineSeconds: 900
+  activeDeadlineSeconds: 1500
   template:
     metadata:
       labels:
@@ -29,6 +29,26 @@ spec:
                 matchLabels:
                   app: wordpress
               topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: fetch
+          image: {{ .Values.setup.downloadImage }}
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c"]
+          args:
+            - |
+              curl -fL --retry 20 --retry-delay 3 --retry-all-errors -C - --connect-timeout 20 --max-time 900 -o /plugins/woocommerce.zip "$PLUGIN_URL"
+          env:
+            - name: PLUGIN_URL
+              value: {{ .Values.setup.pluginUrl | quote }}
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: plugins
+              mountPath: /plugins
       containers:
         - name: setup
           image: {{ .Values.setup.image }}
@@ -39,8 +59,18 @@ spec:
               until [ -f /var/www/html/wp-config.php ]; do sleep 3; done
               until nc -z mysql 3306; do sleep 3; done
               wp core is-installed || wp core install --url="$SITE_URL" --title="$SITE_TITLE" --admin_user="$ADMIN_USER" --admin_password="$ADMIN_PASSWORD" --admin_email="$ADMIN_EMAIL" --skip-email
-              wp plugin is-installed woocommerce || wp plugin install woocommerce
+              wp plugin is-installed woocommerce || wp plugin install /plugins/woocommerce.zip
               wp plugin activate woocommerce
+              cat > /tmp/wookey.php <<'PHP'
+              <?php
+              global $wpdb;
+              $user = get_user_by('login', getenv('ADMIN_USER'));
+              $table = $wpdb->prefix . 'woocommerce_api_keys';
+              $wpdb->delete($table, array('description' => 'woo-mcp'));
+              $wpdb->insert($table, array('user_id' => $user->ID, 'description' => 'woo-mcp', 'permissions' => 'read_write', 'consumer_key' => wc_api_hash(getenv('WOO_KEY')), 'consumer_secret' => getenv('WOO_SECRET'), 'truncated_key' => substr(getenv('WOO_KEY'), -7)));
+              echo "woo api key ready\n";
+              PHP
+              wp eval-file /tmp/wookey.php
               wp wc tool run install_pages --user="$ADMIN_USER"
               wp option update woocommerce_currency "$CURRENCY"
               wp option update woocommerce_default_country "$COUNTRY"
@@ -71,12 +101,26 @@ spec:
               value: {{ .Values.setup.currency | quote }}
             - name: COUNTRY
               value: {{ .Values.setup.country | quote }}
+            - name: WOO_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wooSecretName }}
+                  key: consumer-key
+            - name: WOO_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wooSecretName }}
+                  key: consumer-secret
           resources:
             {{- toYaml .Values.setup.resources | nindent 12 }}
           volumeMounts:
             - name: html
               mountPath: /var/www/html
+            - name: plugins
+              mountPath: /plugins
       volumes:
         - name: html
           persistentVolumeClaim:
             claimName: wordpress-data
+        - name: plugins
+          emptyDir: {}

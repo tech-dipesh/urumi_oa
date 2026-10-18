@@ -1,5 +1,6 @@
 namespace: store
 secretName: store-secrets
+wooSecretName: woo-mcp-secrets
 mysql:
   image: mysql:8.4
   storage: 5Gi
@@ -22,6 +23,8 @@ wordpress:
       memory: 768Mi
 setup:
   image: wordpress:cli
+  downloadImage: curlimages/curl:latest
+  pluginUrl: https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip
   siteTitle: Urumi Store
   adminUser: admin
   adminEmail: admin@store.localhost
