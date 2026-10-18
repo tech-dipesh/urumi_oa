@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-docker build -f apps/woo-mcp/Dockerfile -t woo-mcp:0.1.0 .
-k3d image import woo-mcp:0.1.0 -c urumi
+apps="woo-mcp gateway time-mcp notes-mcp"
+for app in $apps; do docker build -f apps/Dockerfile --build-arg APP="$app" -t "$app:0.1.0" .; done
+k3d image import woo-mcp:0.1.0 gateway:0.1.0 time-mcp:0.1.0 notes-mcp:0.1.0 -c urumi

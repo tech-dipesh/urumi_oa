@@ -9,6 +9,7 @@
     "reset": "bash scripts/reset.sh",
     "images": "bash scripts/images.sh",
     "smoke": "bash scripts/smoke-woo.sh",
-    "netpol": "bash scripts/test-netpol.sh"
+    "netpol": "bash scripts/test-netpol.sh",
+    "smoke-gw": "bash scripts/smoke-gw.sh"
   }
 }
