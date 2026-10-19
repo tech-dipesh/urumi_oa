@@ -2,6 +2,7 @@
 global:
   scheme: https
   storeHost: store.example.com
+  appHost: app.example.com
   storageClass: ""
 store:
   ingress:
@@ -39,3 +40,13 @@ mcp-extras:
       image: ghcr.io/your-user/time-mcp:0.1.0
     - name: notes-mcp
       image: ghcr.io/your-user/notes-mcp:0.1.0
+dashboard:
+  image: ghcr.io/your-user/dashboard:0.1.0
+  imagePullPolicy: Always
+  replicas: 2
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tls:
+      enabled: true
+      secretName: app-tls

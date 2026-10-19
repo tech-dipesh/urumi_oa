@@ -1,5 +1,6 @@
 global:
   scheme: http
   storeHost: store.localhost
+  appHost: app.localhost
   publicPort: ""
   storageClass: ""

@@ -58,7 +58,15 @@ spec:
             - name: SEED_SERVERS
               value: {{ .Values.seeds | toJson | quote }}
             - name: ALLOWED_HOSTS
-              value: {{ .Values.allowedHosts | quote }}
+              value: {{ printf "%s,%s" .Values.allowedHosts .Values.global.appHost | quote }}
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: groq-api-key
+                  optional: true
+            - name: GROQ_MODEL
+              value: {{ .Values.groqModel | quote }}
             - name: CALL_TIMEOUT_MS
               value: {{ .Values.callTimeoutMs | quote }}
             - name: LIST_TIMEOUT_MS

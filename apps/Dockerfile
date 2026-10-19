@@ -7,6 +7,7 @@ COPY apps/woo-mcp/package.json apps/woo-mcp/
 COPY apps/gateway/package.json apps/gateway/
 COPY apps/time-mcp/package.json apps/time-mcp/
 COPY apps/notes-mcp/package.json apps/notes-mcp/
+COPY apps/dashboard/package.json apps/dashboard/
 RUN pnpm install --frozen-lockfile --filter ${APP}...
 COPY apps/${APP} apps/${APP}
 RUN pnpm --filter ${APP} build
