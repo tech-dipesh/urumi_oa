@@ -1,6 +1,7 @@
 import { createMcpExpressApp } from "@modelcontextprotocol/express"
 import { toNodeHandler } from "@modelcontextprotocol/node"
 import { audit } from "@/audit/routes"
+import { chatRoutes } from "@/chat/routes"
 import { auth } from "@/auth/routes"
 import { userOf, mcpUser } from "@/auth/identity"
 import { adminOnly, keyAuth, sessionAuth } from "@/auth/middleware"
@@ -30,6 +31,7 @@ app.use("/api/servers", sessionAuth, adminOnly, servers)
 app.use("/api/users", sessionAuth, adminOnly, users)
 app.use("/api/keys", sessionAuth, keys)
 app.use("/api/audit", sessionAuth, adminOnly, audit)
+app.use("/api/chat", sessionAuth, chatRoutes)
 app.all("/mcp", keyAuth, (req, res) => { mcpUser.run(userOf(req), () => void node(req, res, req.body)) })
 app.use(errorHandler)
 const listener = app.listen(env.PORT, () => { console.log(`gateway listening on ${env.PORT}`) })
