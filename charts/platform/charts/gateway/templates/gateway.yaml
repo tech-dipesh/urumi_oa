@@ -41,11 +41,15 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
                   key: secret-key
-            - name: BOOTSTRAP_TOKEN
+            - name: ADMIN_EMAIL
+              value: {{ .Values.adminEmail | quote }}
+            - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
-                  key: bootstrap-token
+                  key: admin-password
+            - name: COOKIE_SECURE
+              value: {{ eq .Values.global.scheme "https" | quote }}
             - name: WOO_MCP_TOKEN
               valueFrom:
                 secretKeyRef:

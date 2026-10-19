@@ -1,5 +1,6 @@
 namespace: platform
 secretName: gateway-secrets
+adminEmail: admin@urumi.local
 image: gateway:0.1.0
 imagePullPolicy: IfNotPresent
 replicas: 1
