@@ -1,0 +1,16 @@
+namespace: platform
+imagePullPolicy: IfNotPresent
+port: 3000
+gatewayApp: gateway
+servers:
+  - name: time-mcp
+    image: time-mcp:0.1.0
+  - name: notes-mcp
+    image: notes-mcp:0.1.0
+resources:
+  requests:
+    cpu: 20m
+    memory: 48Mi
+  limits:
+    cpu: 300m
+    memory: 128Mi

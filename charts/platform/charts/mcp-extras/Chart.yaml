@@ -1,0 +1,6 @@
+apiVersion: v2
+name: mcp-extras
+description: two tiny demo mcp servers, time and notes
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

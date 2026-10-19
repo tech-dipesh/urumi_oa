@@ -1,0 +1,101 @@
+{{- range .Values.servers }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .name }}
+    app.kubernetes.io/part-of: urumi-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .name }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: {{ .name }}
+          image: {{ .image }}
+          imagePullPolicy: {{ $.Values.imagePullPolicy }}
+          ports:
+            - containerPort: {{ $.Values.port }}
+          env:
+            - name: PORT
+              value: {{ $.Values.port | quote }}
+            - name: ALLOWED_HOSTS
+              value: {{ printf "localhost,127.0.0.1,%s,%s.%s,%s.%s.svc,%s.%s.svc.cluster.local" .name .name $.Values.namespace .name $.Values.namespace .name $.Values.namespace | quote }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ $.Values.port }}
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ $.Values.port }}
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .name }}
+    app.kubernetes.io/part-of: urumi-platform
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .name }}
+  ports:
+    - name: mcp
+      port: {{ $.Values.port }}
+      targetPort: {{ $.Values.port }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .name }}-only-gateway
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .name }}
+    app.kubernetes.io/part-of: urumi-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ $.Values.gatewayApp }}
+      ports:
+        - port: {{ $.Values.port }}
+{{- end }}

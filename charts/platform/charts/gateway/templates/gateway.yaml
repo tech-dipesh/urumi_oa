@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gateway
+    app.kubernetes.io/part-of: urumi-platform
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: gateway
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.port }}
+          env:
+            - name: PORT
+              value: {{ .Values.port | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: postgres-password
+            - name: DB_URL
+              value: postgres://gateway:$(POSTGRES_PASSWORD)@postgres:5432/gateway
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: secret-key
+            - name: BOOTSTRAP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: bootstrap-token
+            - name: WOO_MCP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: woo-mcp-token
+            - name: SEED_SERVERS
+              value: {{ .Values.seeds | toJson | quote }}
+            - name: ALLOWED_HOSTS
+              value: {{ .Values.allowedHosts | quote }}
+            - name: CALL_TIMEOUT_MS
+              value: {{ .Values.callTimeoutMs | quote }}
+            - name: LIST_TIMEOUT_MS
+              value: {{ .Values.listTimeoutMs | quote }}
+            - name: HEALTH_INTERVAL_MS
+              value: {{ .Values.healthIntervalMs | quote }}
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: {{ .Values.port }}
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.port }}
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: {{ .Values.port }}
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: gateway
+    app.kubernetes.io/part-of: urumi-platform
+spec:
+  type: ClusterIP
+  selector:
+    app: gateway
+  ports:
+    - name: mcp
+      port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}

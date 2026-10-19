@@ -28,3 +28,14 @@ woo-mcp:
   image: ghcr.io/your-user/woo-mcp:0.1.0
   imagePullPolicy: Always
   replicas: 2
+gateway:
+  image: ghcr.io/your-user/gateway:0.1.0
+  imagePullPolicy: Always
+  replicas: 2
+mcp-extras:
+  imagePullPolicy: Always
+  servers:
+    - name: time-mcp
+      image: ghcr.io/your-user/time-mcp:0.1.0
+    - name: notes-mcp
+      image: ghcr.io/your-user/notes-mcp:0.1.0
