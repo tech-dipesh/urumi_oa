@@ -4,7 +4,9 @@ const seeds = z.array(z.object({ name: z.string(), url: z.url(), tokenEnv: z.str
 const schema = z.object({
   DB_URL: req("DB_URL"),
   SECRET_KEY: z.string("Please enter a SECRET_KEY").regex(/^[0-9a-f]{64}$/i, "SECRET_KEY must be 64 hex characters"),
-  BOOTSTRAP_TOKEN: req("BOOTSTRAP_TOKEN"),
+  ADMIN_EMAIL: z.email("Please enter a valid ADMIN_EMAIL"),
+  ADMIN_PASSWORD: z.string("Please enter a ADMIN_PASSWORD").min(12, "ADMIN_PASSWORD needs at least 12 characters"),
+  COOKIE_SECURE: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
   PORT: z.coerce.number().default(3000),
   ALLOWED_HOSTS: z.string().default("localhost,127.0.0.1"),
   SEED_SERVERS: z.string().default("[]").transform((raw) => seeds.parse(JSON.parse(raw))),
