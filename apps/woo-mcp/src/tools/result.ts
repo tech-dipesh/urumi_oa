@@ -1,0 +1,1 @@
+export const ok = (data: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(data) }] })
