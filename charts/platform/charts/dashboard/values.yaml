@@ -1,0 +1,20 @@
+namespace: platform
+image: dashboard:0.1.0
+imagePullPolicy: IfNotPresent
+replicas: 1
+port: 8080
+gatewayService: gateway
+gatewayPort: 3000
+resources:
+  requests:
+    cpu: 20m
+    memory: 32Mi
+  limits:
+    cpu: 300m
+    memory: 96Mi
+ingress:
+  className: ""
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: app-tls

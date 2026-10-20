@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dashboard
+description: react dashboard and the public ingress for the app host
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
