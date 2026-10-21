@@ -11,6 +11,8 @@
     "smoke": "bash scripts/smoke-woo.sh",
     "netpol": "bash scripts/test-netpol.sh",
     "smoke-gw": "bash scripts/smoke-gw.sh",
-    "groq": "bash scripts/groq.sh"
+    "groq": "bash scripts/groq.sh",
+    "check": "bash scripts/check.sh",
+    "demo": "bash scripts/demo-prep.sh"
   }
 }
