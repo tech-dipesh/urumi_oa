@@ -1,19 +1,16 @@
-import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto"
-const derive = (password: string, salt: Buffer, length: number) => new Promise<Buffer>((resolve, reject) => {
-  scrypt(password, salt, length, (err, key) => { if (err) reject(err); else resolve(key) })
-})
-export const sha256 = (text: string) => createHash("sha256").update(text).digest("hex")
-export const randomToken = (bytes = 32) => randomBytes(bytes).toString("base64url")
-export async function hashPassword(password: string) {
-  const salt = randomBytes(16)
-  const key = await derive(password, salt, 64)
-  return `scrypt$${salt.toString("base64")}$${key.toString("base64")}`
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto"
+import { env } from "@/infra/env"
+const key = Buffer.from(env.SECRET_KEY, "hex")
+export function encrypt(text: string) {
+  const iv = randomBytes(12)
+  const cipher = createCipheriv("aes-256-gcm", key, iv)
+  const body = Buffer.concat([cipher.update(text, "utf8"), cipher.final()])
+  return [iv, cipher.getAuthTag(), body].map((part) => part.toString("base64")).join(".")
 }
-export async function checkPassword(password: string, stored: string) {
-  const [, salt, key] = stored.split("$")
-  if (!salt || !key) return false
-  const expected = Buffer.from(key, "base64")
-  const given = await derive(password, Buffer.from(salt, "base64"), expected.length)
-  return timingSafeEqual(given, expected)
+export function decrypt(blob: string) {
+  const [iv, tag, body] = blob.split(".").map((part) => Buffer.from(part, "base64"))
+  if (!iv || !tag || !body) throw new Error("stored credential is corrupted")
+  const decipher = createDecipheriv("aes-256-gcm", key, iv)
+  decipher.setAuthTag(tag)
+  return Buffer.concat([decipher.update(body), decipher.final()]).toString("utf8")
 }
-export const dummyHash = await hashPassword("not-a-real-password")

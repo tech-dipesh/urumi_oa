@@ -26,7 +26,7 @@ export default function Audit() {
   }, [load])
   return (
     <Card title="Audit log of tool calls">
-      <div className="mb-3"><Button onClick={() => void load()}>Refresh</Button></div>
+      <div className="mb-3"><Button onClick={() => void load()} className="cursor-pointer">Refresh</Button></div>
       {error && <Notice kind="error">{error}</Notice>}
       {loading && rows.length === 0 && <Loading />}
       {!loading && rows.length === 0 && !error && <Empty>No tool calls yet.</Empty>}

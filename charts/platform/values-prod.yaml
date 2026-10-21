@@ -1,4 +1,3 @@
-# placeholder domain, set your own
 global:
   scheme: https
   storeHost: store.example.com
