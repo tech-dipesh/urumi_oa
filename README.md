@@ -9,14 +9,15 @@
 
 
 ## Assets:
-![Api Keys](api-keys/chat.png)
+![Api Keys](assets/chat.png)
 ![Chat](assets/chat.png)
 ![Members](assets/members.png)
 ![Payment Successful](assets/payment-successful.png)
 ![Servers](assets/servers.png)
 ![Urumi Shop](assets/urumi-shop.png)
 
-![architecture](docs/architecture.svg)
+![architecture](assets/architecture.svg)
+
 Upstream servers answer only to the gateway pod. Clients never see an upstream credential, and their own key is never forwarded.
 
 ## Stack:
@@ -66,14 +67,26 @@ pnpm groq
 
 
 
+## Helm charts and values
+- `charts/platform` is the umbrella. Subcharts: `store` (WordPress, MySQL, setup job), `woo-mcp`, `gateway` (gateway and Postgres), `mcp-extras` (time and notes servers), `dashboard` (and the ingress).
+- `values-local.yaml` and `values-prod.yaml` are the only difference between local and prod.
 
-Helm charts and values files (local and production)
-A short "System design and tradeoffs" note covering:
-architecture choices
-how tool aggregation, routing and failure handling work
-what changes for production (DNS, ingress, storage class, secrets)
-A short threat model note covering:
-shared upstream credentials: what a member can do with a credential they never see
-why client tokens are not passed through to upstream servers
-untrusted upstreams: tool descriptions written to manipulate the model
-what one team member can do to another
+## system Design:
+- The gateway will keeps the no connection so it opens a short MCP session.
+- Chat and external clients use the same tool runner so every call is under the real user.
+- Postgres with raw SQL i've not used a orm.
+- For the tool aggregation every tool is named with: `server_tool` with so while server calling can have both time and notes `ping`
+- List a ask with all enabled servers in the parallel with return the connected one. A call can splits the name or find and server.
+- From 3 second to listing and 10 second to call. a slow or dead server always give a clear error message
+- **Production** the changes will be a dns two recores, store host app hoste. Ingress cert manager. Storage Class set in values. local uses the k3s default. Secrets for the same script aginst the VPS
+### Threat Model:
+- Shared upstream credentials mode with a member can never sees them but can use everything that they allow, through the tools.
+- Clients token will not be apsses on with the upstream could keep reply them. The gateway willl use the upstream own secret credentials.
+-The member to member can't see a other user keys, session or the audit logs. But they share the tools and groq key quota.  But admin have a full priviledge.
+### STand out thing that i can say i try even a minimal:
+- Failure isolation and name collision graceful handling: `apps/gateway/src/core/tools.ts`, `upstream/connect.ts`
+- Credentials will be encrypted at the rest: `apps/gateway/src/crypto.ts`
+- The non root users will have only read only containers and network policies: `charts/platform/charts/*/templates`
+- For why server is unreachable we are storing on the log on every call find out from: `kubectl logs deployment/gateway -n platform`
+
+# Thanks
